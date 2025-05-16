@@ -58,7 +58,13 @@
     "v5KAwe6HFmRdTg9dI5163IXVjm82"
   ],
   "dependencies": [],
-  "globalVariables": [],
+  "globalVariables": [
+    {
+      "name": "Playing",
+      "type": "boolean",
+      "value": false
+    }
+  ],
   "sceneVariables": [],
   "eventsFunctions": [
     {
@@ -94,6 +100,34 @@
           "description": "\"https://example.com/music.mp3\"",
           "name": "URL",
           "type": "string"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "fullName": "Rewind the sound",
+      "functionType": "Action",
+      "name": "RewindSound",
+      "sentence": "Rewind the sound by _PARAM1_ seconds ",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (window._gdBackgroundMusic) {",
+            "    window._gdBackgroundMusic.currentTime = eventsFunctionContext.getArgument(\"TimeInSeconds\");",
+            "}",
+            ""
+          ],
+          "parameterObjects": "",
+          "useStrict": true,
+          "eventsSheetExpanded": false
+        }
+      ],
+      "parameters": [
+        {
+          "description": "In seconds (Example: 1:00 - 60)",
+          "name": "TimeInSeconds",
+          "type": "expression"
         }
       ],
       "objectGroups": []
@@ -150,6 +184,35 @@
         }
       ],
       "parameters": [],
+      "objectGroups": []
+    },
+    {
+      "fullName": "Change the sound volume",
+      "functionType": "Action",
+      "name": "VolumeSound",
+      "sentence": "Set the sound volume in _PARAM1_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "const volumePercent = eventsFunctionContext.getArgument(\"Volume\");",
+            "if (window._gdBackgroundMusic) {",
+            "    const clampedVolume = Math.min(100, Math.max(0, volumePercent)) / 100;",
+            "    window._gdBackgroundMusic.volume = clampedVolume;",
+            "}"
+          ],
+          "parameterObjects": "",
+          "useStrict": true,
+          "eventsSheetExpanded": false
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Set the volume (1-100)",
+          "name": "Volume",
+          "type": "expression"
+        }
+      ],
       "objectGroups": []
     }
   ],
