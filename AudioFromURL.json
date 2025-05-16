@@ -1,0 +1,158 @@
+{
+  "author": "",
+  "category": "Audio",
+  "extensionNamespace": "",
+  "fullName": "Audio From URL",
+  "gdevelopVersion": "",
+  "helpPath": "",
+  "iconUrl": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0ibWRpLW11c2ljLW5vdGUtc2l4dGVlbnRoLWRvdHRlZCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGQ9Ik0xOCAxOC41QTEuNSAxLjUgMCAxIDEgMTYuNSAxN0ExLjUgMS41IDAgMCAxIDE4IDE4LjVNMTggN1YzSDEyVjEzLjU1QTQgNCAwIDEgMCAxNCAxN1YxMUgxOFY4SDE0VjdaIiAvPjwvc3ZnPg==",
+  "name": "AudioFromURL",
+  "previewIconUrl": "https://asset-resources.gdevelop.io/public-resources/Icons/6e661f5a0ce955e38e9bb2fc6bb9e15f6ad92f898155c48e89249c978312f630_music-note-sixteenth-dotted.svg",
+  "shortDescription": "🎵 Audio From URL is an extension for GDevelop 5 that allows you to play music and sounds directly from the internet via a link. Just specify the URL of the audio file to play it!",
+  "version": "1.0.0",
+  "description": [
+    "🔊 AudioFromURL - play music by URL in GDevelop 5",
+    "This extension adds to GDevelop 5 the ability to download and play audio files directly from the internet, without having to upload them to the project manually.",
+    "",
+    "🌟 Main features:",
+    "✅ Play audio by link (MP3, OGG, WAV, etc.).",
+    "✅ Volume, looping and playback control",
+    "✅ Dynamic track change (you can change URL on the fly)",
+    "✅ Supports pause, stop and status check",
+    "",
+    "🛠 Where can I use it?",
+    "",
+    "Online radio in games",
+    "",
+    "Dynamic music downloads (e.g. from the cloud)",
+    "",
+    "Play custom tracks",
+    "",
+    "Streaming audio projects",
+    "",
+    "⚙️ Technical features:",
+    "",
+    "Works via HTML5 Audio API",
+    "",
+    "Supports CORS (but requires proper headers on the server)",
+    "",
+    "Optimized for web export",
+    "",
+    "📌 Example Usage:",
+    "",
+    "Add an object with AudioFromURL behavior.",
+    "",
+    "Set the URL (https://example.com/music.mp3).",
+    "",
+    "Start playback - and enjoy!",
+    "",
+    "Perfect for developers who want to use external audio resources without the hassle! 🚀"
+  ],
+  "tags": [
+    "audio",
+    "url",
+    "music",
+    "sound"
+  ],
+  "authorIds": [
+    "v5KAwe6HFmRdTg9dI5163IXVjm82"
+  ],
+  "dependencies": [],
+  "globalVariables": [],
+  "sceneVariables": [],
+  "eventsFunctions": [
+    {
+      "description": "Play the sound with this action.",
+      "fullName": "Play sound from URL",
+      "functionType": "Action",
+      "name": "PlaySoundFromURL",
+      "sentence": "Play sound at URL _PARAM1_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "const musicUrl =  eventsFunctionContext.getArgument(\"URL\");",
+            "",
+            "const audio = new Audio(musicUrl);",
+            "audio.volume = 0.5;",
+            "audio.loop = true; ",
+            "",
+            "audio.play().catch(e => {",
+            "    console.log(\"Playback is blocked by the browser\");",
+            "});",
+            "",
+            "window._gdBackgroundMusic = audio;",
+            ""
+          ],
+          "parameterObjects": "",
+          "useStrict": true,
+          "eventsSheetExpanded": false
+        }
+      ],
+      "parameters": [
+        {
+          "description": "\"https://example.com/music.mp3\"",
+          "name": "URL",
+          "type": "string"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "description": "Stop all triggered sounds with this action.",
+      "fullName": "Stop sound",
+      "functionType": "Action",
+      "name": "StopSound",
+      "sentence": "Stop all sounds",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::Standard",
+          "conditions": [],
+          "actions": []
+        },
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (window._gdBackgroundMusic) {",
+            "    window._gdBackgroundMusic.pause();",
+            "    window._gdBackgroundMusic.currentTime = 0;",
+            "}",
+            ""
+          ],
+          "parameterObjects": "",
+          "useStrict": true,
+          "eventsSheetExpanded": false
+        }
+      ],
+      "parameters": [],
+      "objectGroups": []
+    },
+    {
+      "fullName": "Pause/resume sound",
+      "functionType": "Action",
+      "name": "PauseSound",
+      "sentence": "Pause/resume sound",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (window._gdBackgroundMusic) {",
+            "    if (window._gdBackgroundMusic.paused) {",
+            "        window._gdBackgroundMusic.play(); /* Replay */",
+            "    } else {",
+            "        window._gdBackgroundMusic.pause(); /* Pause */",
+            "    }",
+            "}"
+          ],
+          "parameterObjects": "",
+          "useStrict": true,
+          "eventsSheetExpanded": false
+        }
+      ],
+      "parameters": [],
+      "objectGroups": []
+    }
+  ],
+  "eventsBasedBehaviors": [],
+  "eventsBasedObjects": []
+}
