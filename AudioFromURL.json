@@ -9,7 +9,7 @@
   "name": "AudioFromURL",
   "previewIconUrl": "https://asset-resources.gdevelop.io/public-resources/Icons/6e661f5a0ce955e38e9bb2fc6bb9e15f6ad92f898155c48e89249c978312f630_music-note-sixteenth-dotted.svg",
   "shortDescription": "🎵 Audio From URL is an extension for GDevelop 5 that allows you to play music and sounds directly from the internet via a link. Just specify the URL of the audio file to play it!",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": [
     "🔊 AudioFromURL - play music by URL in GDevelop 5",
     "This extension adds to GDevelop 5 the ability to download and play audio files directly from the internet, without having to upload them to the project manually.",
@@ -68,6 +68,70 @@
   "sceneVariables": [],
   "eventsFunctions": [
     {
+      "fullName": "If the sound is playing",
+      "functionType": "Condition",
+      "name": "SoundPlaying",
+      "sentence": "If the sound is playing",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "if (window._gdBackgroundMusic) {",
+            "    // Если аудио существует, возвращаем true только когда оно играет",
+            "    eventsFunctionContext.returnValue = !window._gdBackgroundMusic.paused && !window._gdBackgroundMusic.ended;",
+            "} else {",
+            "    // Если аудио не существует (никогда не запускалось), возвращаем false",
+            "    eventsFunctionContext.returnValue = false;",
+            "}"
+          ],
+          "parameterObjects": "",
+          "useStrict": true,
+          "eventsSheetExpanded": false
+        },
+        {
+          "disabled": true,
+          "type": "BuiltinCommonInstructions::Standard",
+          "conditions": [],
+          "actions": [
+            {
+              "type": {
+                "value": "SetReturnBoolean"
+              },
+              "parameters": [
+                "True"
+              ]
+            }
+          ]
+        }
+      ],
+      "parameters": [],
+      "objectGroups": []
+    },
+    {
+      "fullName": "",
+      "functionType": "Condition",
+      "name": "SoundPaused",
+      "sentence": "",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::Standard",
+          "conditions": [],
+          "actions": [
+            {
+              "type": {
+                "value": "SetReturnBoolean"
+              },
+              "parameters": [
+                "True"
+              ]
+            }
+          ]
+        }
+      ],
+      "parameters": [],
+      "objectGroups": []
+    },
+    {
       "description": "Play the sound with this action.",
       "fullName": "Play sound from URL",
       "functionType": "Action",
@@ -97,7 +161,7 @@
       ],
       "parameters": [
         {
-          "description": "URL",
+          "description": "URL (to .mp3)",
           "name": "URL",
           "type": "string"
         }
@@ -177,6 +241,35 @@
             "        window._gdBackgroundMusic.pause(); /* Pause */",
             "    }",
             "}"
+          ],
+          "parameterObjects": "",
+          "useStrict": true,
+          "eventsSheetExpanded": false
+        }
+      ],
+      "parameters": [],
+      "objectGroups": []
+    },
+    {
+      "fullName": "Mute sound when the tab is minimized.",
+      "functionType": "Action",
+      "name": "TurnOffSound",
+      "sentence": "Mute sound when the tab is minimized.",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "window._gdAudioPauseOnHide = true;",
+            "document.addEventListener('visibilitychange', () => {",
+            "    if (!window._gdBackgroundMusic) return;   ",
+            "    if (document.hidden && window._gdAudioPauseOnHide) {",
+            "        window._gdBackgroundMusic._pausedTime = window._gdBackgroundMusic.currentTime;",
+            "        window._gdBackgroundMusic.pause();",
+            "    } else if (window._gdBackgroundMusic._pausedTime !== undefined) {",
+            "        window._gdBackgroundMusic.currentTime = window._gdBackgroundMusic._pausedTime;",
+            "        window._gdBackgroundMusic.play().catch(e => console.log(\"Автовоспроизведение заблокировано\"));",
+            "    }",
+            "});"
           ],
           "parameterObjects": "",
           "useStrict": true,
@@ -270,7 +363,6 @@
       "fullName": "",
       "functionType": "Action",
       "name": "SmoothSoundChange",
-      "private": true,
       "sentence": "Smoothly switch the sound to _PARAM1_ with _PARAM2_ ms smoothness",
       "events": [
         {
@@ -282,34 +374,45 @@
           "type": "BuiltinCommonInstructions::JsCode",
           "inlineCode": [
             "const newMusicUrl = eventsFunctionContext.getArgument(\"NewMusicURL\");",
-            "const fadeDuration = eventsFunctionContext.getArgument(\"FadeDuration\");",
-            "const newAudio = new Audio(newMusicUrl);",
-            "newAudio.volume = 0;",
-            "newAudio.loop = true;",
-            "newAudio.play().catch(e => {",
-            "    console.log(\"blocked by your browser\");",
-            "});",
-            "if (!window._gdBackgroundMusic) {",
-            "    window._gdBackgroundMusic = newAudio;",
-            "    newAudio.volume = 0.5;",
-            "    return;",
-            "}",
-            "const currentAudio = window._gdBackgroundMusic;",
-            "const fadeSteps = 20; ",
-            "const stepTime = (fadeDuration * 1000) / fadeSteps;",
-            "let step = 0;",
-            "const fadeInterval = setInterval(() => {",
-            "    step++;",
-            "    const progress = step / fadeSteps;",
-            "    currentAudio.volume = Math.max(0, 0.5 * (1 - progress));",
-            "    newAudio.volume = Math.min(0.5, 0.5 * progress);",
-            "    if (step >= fadeSteps) {",
-            "        clearInterval(fadeInterval);",
-            "        currentAudio.pause();",
-            "        currentAudio.currentTime = 0;",
-            "        window._gdBackgroundMusic = newAudio;",
-            "    }",
-            "}, stepTime);"
+            "const fadeDuration = eventsFunctionContext.getArgument(\"DurationMs\") || 1000;",
+            "",
+            "if (window._gdBackgroundMusic) {",
+            "    const oldAudio = window._gdBackgroundMusic;",
+            "    const initialVolume = oldAudio.volume;",
+            "    const startTime = Date.now();",
+            "",
+            "    const newAudio = new Audio(newMusicUrl);",
+            "    newAudio.volume = 0;",
+            "    newAudio.loop = true;",
+            "",
+            "    newAudio.play().catch(e => {",
+            "        console.log(\"Автовоспроизведение заблокировано браузером\");",
+            "    });",
+            "",
+            "    const fadeInterval = setInterval(() => {",
+            "        const elapsed = Date.now() - startTime;",
+            "        const progress = Math.min(elapsed / fadeDuration, 1);",
+            "        ",
+            "",
+            "        oldAudio.volume = initialVolume * (1 - progress);",
+            "        newAudio.volume = progress;",
+            "",
+            "        if (progress >= 1) {",
+            "            clearInterval(fadeInterval);",
+            "            oldAudio.pause();",
+            "            oldAudio.currentTime = 0;",
+            "            window._gdBackgroundMusic = newAudio;",
+            "        }",
+            "    }, 16);",
+            "} else {",
+            "    const audio = new Audio(newMusicUrl);",
+            "    audio.volume = 1;",
+            "    audio.loop = true;",
+            "    audio.play().catch(e => {",
+            "        console.log(\"Автовоспроизведение заблокировано браузером\");",
+            "    });",
+            "    window._gdBackgroundMusic = audio;",
+            "}"
           ],
           "parameterObjects": "",
           "useStrict": true,
@@ -318,13 +421,13 @@
       ],
       "parameters": [
         {
-          "description": "",
+          "description": "URL (to .mp3)",
           "name": "NewMusicURL",
           "type": "string"
         },
         {
           "description": "Write a delay (example: 1000 ms - 1 second)",
-          "name": "FadeDuration",
+          "name": "DurationMs",
           "type": "expression"
         }
       ],
