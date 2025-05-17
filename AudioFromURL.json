@@ -108,30 +108,6 @@
       "objectGroups": []
     },
     {
-      "fullName": "",
-      "functionType": "Condition",
-      "name": "SoundPaused",
-      "sentence": "",
-      "events": [
-        {
-          "type": "BuiltinCommonInstructions::Standard",
-          "conditions": [],
-          "actions": [
-            {
-              "type": {
-                "value": "SetReturnBoolean"
-              },
-              "parameters": [
-                "True"
-              ]
-            }
-          ]
-        }
-      ],
-      "parameters": [],
-      "objectGroups": []
-    },
-    {
       "description": "Play the sound with this action.",
       "fullName": "Play sound from URL",
       "functionType": "Action",
@@ -251,10 +227,10 @@
       "objectGroups": []
     },
     {
-      "fullName": "Mute sound when the tab is minimized.",
+      "fullName": "Mute sound when the tab is minimized",
       "functionType": "Action",
       "name": "TurnOffSound",
-      "sentence": "Mute sound when the tab is minimized.",
+      "sentence": "Mute sound when the tab is minimized",
       "events": [
         {
           "type": "BuiltinCommonInstructions::JsCode",
@@ -360,7 +336,8 @@
       "objectGroups": []
     },
     {
-      "fullName": "",
+      "description": "Smoothly switch the sound to new URL with smoothness",
+      "fullName": "Smoothly switch the sound",
       "functionType": "Action",
       "name": "SmoothSoundChange",
       "sentence": "Smoothly switch the sound to _PARAM1_ with _PARAM2_ ms smoothness",
