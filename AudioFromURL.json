@@ -9,7 +9,7 @@
   "name": "AudioFromURL",
   "previewIconUrl": "https://asset-resources.gdevelop.io/public-resources/Icons/6e661f5a0ce955e38e9bb2fc6bb9e15f6ad92f898155c48e89249c978312f630_music-note-sixteenth-dotted.svg",
   "shortDescription": "🎵 Audio From URL is an extension for GDevelop 5 that allows you to play music and sounds directly from the internet via a link. Just specify the URL of the audio file to play it!",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": [
     "🔊 AudioFromURL - play music by URL in GDevelop 5",
     "This extension adds to GDevelop 5 the ability to download and play audio files directly from the internet, without having to upload them to the project manually.",
@@ -141,20 +141,23 @@
       "fullName": "Play sound from URL",
       "functionType": "Action",
       "name": "PlaySoundFromURL",
-      "sentence": "Play sound at URL _PARAM1_",
+      "sentence": "Play sound at URL _PARAM1_ (Loop: _PARAM2_)",
       "events": [
         {
           "type": "BuiltinCommonInstructions::JsCode",
           "inlineCode": [
-            "const musicUrl =  eventsFunctionContext.getArgument(\"URL\");",
+            "const musicUrl = eventsFunctionContext.getArgument(\"URL\");",
+            "const shouldLoop = eventsFunctionContext.getArgument(\"Loop\"); // true/false",
+            "",
             "const audio = new Audio(musicUrl);",
             "audio.volume = 0.5;",
-            "audio.loop = true; ",
+            "audio.loop = shouldLoop; // Устанавливаем параметр зацикливания",
+            "",
             "audio.play().catch(e => {",
             "    console.log(\"Playback is blocked by the browser\");",
             "});",
-            "window._gdBackgroundMusic = audio;",
-            ""
+            "",
+            "window._gdBackgroundMusic = audio;"
           ],
           "parameterObjects": "",
           "useStrict": true,
@@ -166,6 +169,48 @@
           "description": "URL (to .mp3)",
           "name": "URL",
           "type": "string"
+        },
+        {
+          "description": "Loop:",
+          "name": "Loop",
+          "type": "trueorfalse"
+        }
+      ],
+      "objectGroups": []
+    },
+    {
+      "fullName": "Get the volume value",
+      "functionType": "Action",
+      "name": "VolumeGetValue",
+      "sentence": "Get the volume value and pass it to variable _PARAM1_",
+      "events": [
+        {
+          "type": "BuiltinCommonInstructions::JsCode",
+          "inlineCode": [
+            "// Получаем объект переменной (не строку!)",
+            "const volumeVariable = eventsFunctionContext.getArgument(\"VolumeVariable\");",
+            "",
+            "if (window._gdBackgroundMusic) {",
+            "    // Получаем текущую громкость (0.0-1.0) и конвертируем в проценты (0-100)",
+            "    const currentVolumePercent = Math.round(window._gdBackgroundMusic.volume * 100);",
+            "    ",
+            "    // Сохраняем значение в переменную GDevelop",
+            "    volumeVariable.setNumber(currentVolumePercent);",
+            "} else {",
+            "    // Если музыка не играет, сохраняем 0",
+            "    volumeVariable.setNumber(0);",
+            "}"
+          ],
+          "parameterObjects": "",
+          "useStrict": true,
+          "eventsSheetExpanded": false
+        }
+      ],
+      "parameters": [
+        {
+          "description": "Variable",
+          "name": "VolumeVariable",
+          "type": "variable"
         }
       ],
       "objectGroups": []
