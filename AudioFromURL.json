@@ -9,7 +9,7 @@
   "name": "AudioFromURL",
   "previewIconUrl": "https://asset-resources.gdevelop.io/public-resources/Icons/6e661f5a0ce955e38e9bb2fc6bb9e15f6ad92f898155c48e89249c978312f630_music-note-sixteenth-dotted.svg",
   "shortDescription": "🎵 Audio From URL is an extension for GDevelop 5 that allows you to play music and sounds directly from the internet via a link. Just specify the URL of the audio file to play it!",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": [
     "🔊 AudioFromURL - play music by URL in GDevelop 5",
     "This extension adds to GDevelop 5 the ability to download and play audio files directly from the internet, without having to upload them to the project manually.",
@@ -108,11 +108,11 @@
             "const audio = new Audio(url);",
             "audio.addEventListener('loadedmetadata', () => {",
             "    runtimeScene.getVariables().get(eventsFunctionContext.getArgument(\"Variable1\"))",
-            "        .setString(audio.duration ? `${Math.round(audio.duration)}` : \"Нет данных\");",
+            "        .setString(audio.duration ? `${Math.round(audio.duration)}` : \"no data!\");",
             "});",
             "audio.addEventListener('error', () => {",
             "    runtimeScene.getVariables().get(\"TrackError\")",
-            "        .setString(\"Ошибка загрузки файла\");",
+            "        .setString(\"error of load data\");",
             "});",
             "",
             "audio.load();"
@@ -147,15 +147,12 @@
           "type": "BuiltinCommonInstructions::JsCode",
           "inlineCode": [
             "const musicUrl =  eventsFunctionContext.getArgument(\"URL\");",
-            "",
             "const audio = new Audio(musicUrl);",
             "audio.volume = 0.5;",
             "audio.loop = true; ",
-            "",
             "audio.play().catch(e => {",
             "    console.log(\"Playback is blocked by the browser\");",
             "});",
-            "",
             "window._gdBackgroundMusic = audio;",
             ""
           ],
@@ -177,15 +174,34 @@
       "fullName": "Rewind the sound",
       "functionType": "Action",
       "name": "RewindSound",
-      "sentence": "Rewind the sound by _PARAM1_ seconds ",
+      "sentence": "Rewind the sound by: _PARAM2_ _PARAM1_ seconds",
       "events": [
         {
           "type": "BuiltinCommonInstructions::JsCode",
           "inlineCode": [
+            "const seekOperator = eventsFunctionContext.getArgument(\"Operator\"); // \"+\", \"-\", \"=\"",
+            "const seekValue = eventsFunctionContext.getArgument(\"TimeInSeconds\"); ",
             "if (window._gdBackgroundMusic) {",
-            "    window._gdBackgroundMusic.currentTime = eventsFunctionContext.getArgument(\"TimeInSeconds\");",
-            "}",
-            ""
+            "    let newTime;",
+            "    const currentTime = window._gdBackgroundMusic.currentTime;",
+            "    switch (seekOperator) {",
+            "        case \"+\":",
+            "            newTime = currentTime + seekValue;",
+            "            break;",
+            "        case \"-\":",
+            "            newTime = currentTime - seekValue; ",
+            "            break;",
+            "        case \"=\":",
+            "        default:",
+            "            newTime = seekValue;",
+            "            break;",
+            "    }",
+            "    newTime = Math.max(0, newTime);",
+            "    if (window._gdBackgroundMusic.duration && !isNaN(window._gdBackgroundMusic.duration)) {",
+            "        newTime = Math.min(window._gdBackgroundMusic.duration, newTime);",
+            "    }",
+            "    window._gdBackgroundMusic.currentTime = newTime;",
+            "}"
           ],
           "parameterObjects": "",
           "useStrict": true,
@@ -197,6 +213,12 @@
           "description": "In seconds (Example: 1:00 - 60)",
           "name": "TimeInSeconds",
           "type": "expression"
+        },
+        {
+          "description": "Modificator's sign",
+          "name": "Operator",
+          "supplementaryInformation": "[\"-\",\"+\",\"=\"]",
+          "type": "stringWithSelector"
         }
       ],
       "objectGroups": []
@@ -293,14 +315,11 @@
         {
           "type": "BuiltinCommonInstructions::JsCode",
           "inlineCode": [
-            "const volumeOperator = eventsFunctionContext.getArgument(\"Operator\"); // \"+\", \"-\" или \"=\"",
-            "const volumeValue = eventsFunctionContext.getArgument(\"Value\"); // Число от 0 до 100",
+            "const volumeOperator = eventsFunctionContext.getArgument(\"Operator\"); // \"+\", \"-\", \"=\"",
+            "const volumeValue = eventsFunctionContext.getArgument(\"Value\"); ",
             "",
             "if (window._gdBackgroundMusic) {",
-            "    // Получаем текущую громкость (от 0 до 1)",
-            "    let currentVolume = window._gdBackgroundMusic.volume * 100; // Конвертируем в проценты",
-            "    ",
-            "    // Применяем оператор",
+            "    let currentVolume = window._gdBackgroundMusic.volume * 100;",
             "    let newVolume;",
             "    switch (volumeOperator) {",
             "        case \"+\":",
@@ -314,8 +333,6 @@
             "            newVolume = volumeValue;",
             "            break;",
             "    }",
-            "    ",
-            "    // Ограничиваем диапазон и устанавливаем громкость",
             "    const clampedVolume = Math.min(100, Math.max(0, newVolume)) / 100;",
             "    window._gdBackgroundMusic.volume = clampedVolume;",
             "}"
@@ -345,7 +362,7 @@
       "fullName": "Smoothly fading volume change",
       "functionType": "Action",
       "name": "FadeChangeVolume",
-      "sentence": "Smoothly switch the volume to _PARAM1_ with a delay of _PARAM2_ ms",
+      "sentence": "Smoothly switch the volume to _PARAM3__PARAM1_ with a delay of _PARAM2_ ms",
       "events": [
         {
           "type": "BuiltinCommonInstructions::Standard",
@@ -355,21 +372,40 @@
         {
           "type": "BuiltinCommonInstructions::JsCode",
           "inlineCode": [
+            "const volumeOperator = eventsFunctionContext.getArgument(\"Operator\"); // \"+\", \"-\", \"=\"",
             "const targetVolumePercent = eventsFunctionContext.getArgument(\"TargetVolume\");",
-            "const fadeDuration = eventsFunctionContext.getArgument(\"DurationMs\"); ",
+            "const fadeDuration = eventsFunctionContext.getArgument(\"DurationMs\");",
             "",
             "if (window._gdBackgroundMusic) {",
-            "    const targetVolume = Math.min(100, Math.max(0, targetVolumePercent)) / 100;",
+            "    let targetVolume;",
+            "    const currentVolumePercent = window._gdBackgroundMusic.volume * 100;",
+            "    ",
+            "    switch (volumeOperator) {",
+            "        case \"+\":",
+            "            targetVolume = currentVolumePercent + targetVolumePercent;",
+            "            break;",
+            "        case \"-\":",
+            "            targetVolume = currentVolumePercent - targetVolumePercent;",
+            "            break;",
+            "        case \"=\":",
+            "        default:",
+            "            targetVolume = targetVolumePercent;",
+            "            break;",
+            "    }",
+            "    ",
+            "    const clampedTargetVolume = Math.min(100, Math.max(0, targetVolume)) / 100;",
             "    const initialVolume = window._gdBackgroundMusic.volume;",
             "    const startTime = Date.now();",
             "    ",
             "    const fadeInterval = setInterval(() => {",
             "        const elapsed = Date.now() - startTime;",
             "        const progress = Math.min(elapsed / fadeDuration, 1);",
-            "        window._gdBackgroundMusic.volume = initialVolume + (targetVolume - initialVolume) * progress;",
+            "        window._gdBackgroundMusic.volume = initialVolume + (clampedTargetVolume - initialVolume) * progress;",
             "        ",
             "        if (progress >= 1) clearInterval(fadeInterval);",
-            "    }, 16); /* 60fps */",
+            "    }, 16); /* ~60 FPS */",
+            "",
+            "    window._gdBackgroundMusic._fadeInterval = fadeInterval;",
             "}"
           ],
           "parameterObjects": "",
@@ -387,6 +423,12 @@
           "description": "Write a delay (example: 1000 ms - 1 second)",
           "name": "DurationMs",
           "type": "expression"
+        },
+        {
+          "description": "Modificator's sign",
+          "name": "Operator",
+          "supplementaryInformation": "[\"-\",\"+\",\"=\"]",
+          "type": "stringWithSelector"
         }
       ],
       "objectGroups": []
